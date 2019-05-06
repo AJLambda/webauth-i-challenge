@@ -4,7 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 
 const Users = require("./users/users-model.js");
-// const protected = require("./auth/protected-middleware.js");
+const protected = require("./auth/protected-middleware.js");
 
 const server = express();
 const parser = express.json();
@@ -19,6 +19,13 @@ server.get("/", (req, res) => {
 });
 
 // GET	/api/users	If the user is logged in, respond with an array of all the users contained in the database. If the user is not logged in respond with the correct status code and the message: 'You shall not pass!'.
+server.get("/api/users", protected, (req, res) => {
+  Users.find()
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => res.send(err));
+});
 
 // POST	/api/register	Creates a user using the information sent inside the body of the request. Hash the password before saving the user to the database.
 server.post("/api/register", (req, res) => {
