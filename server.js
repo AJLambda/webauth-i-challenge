@@ -38,6 +38,7 @@ server.post("/api/register", (req, res) => {
 });
 
 // POST	/api/login	Use the credentials sent inside the body to authenticate the user. On successful login, create a new session for the user and send back a 'Logged in' message and a cookie that contains the user id. If login fails, respond with the correct status code and the message: 'You shall not pass!'
+
 server.post("/api/login", (req, res) => {
   let { username, password } = req.body;
 
@@ -47,9 +48,9 @@ server.post("/api/login", (req, res) => {
     .then(user => {
       //
       if (user && bcrypt.compareSync(password, user.password)) {
-        res.status(200).json({ message: `Welcome ${user.username}!` });
+        res.status(200).json({ message: `${user.username} Logged in` });
       } else {
-        res.status(401).json({ message: "Invalid Credentials" });
+        res.status(401).json({ message: `You shall not pass!` });
       }
     })
     .catch(error => {
