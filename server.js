@@ -2,6 +2,7 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+const session = require("express-session");
 
 const Users = require("./users/users-model.js");
 const protected = require("./auth/protected-middleware.js");
@@ -9,13 +10,27 @@ const protected = require("./auth/protected-middleware.js");
 const server = express();
 const parser = express.json();
 
+const sessionConfig = {
+  name: "monster", // by default would be sid
+  secret: "keep it secret, keep it safe! -gandalf",
+  cookie: {
+    httpOnly: true, // true means prevent access from JavaScript code
+    maxAge: 1000 * 60 * 2, // in milliseconds
+    secure: false // true means only send the cookie over https
+  },
+  resave: false, // resave session even if it didn't change?
+  saveUninitialized: true // create new sessions automatically, make sure to comply with law
+};
+
+server.use(session(sessionConfig));
 server.use(helmet());
 server.use(parser);
 server.use(cors());
 
 // sanity check
 server.get("/", (req, res) => {
-  res.status(200).json({ message: "hello" });
+  const username = req.session.username || "stranger";
+  res.status(200).json(`Hello, ${username}`);
 });
 
 // GET	/api/users	If the user is logged in, respond with an array of all the users contained in the database. If the user is not logged in respond with the correct status code and the message: 'You shall not pass!'.
@@ -53,7 +68,6 @@ server.post("/api/login", (req, res) => {
   Users.findBy({ username })
     .first()
     .then(user => {
-      //
       if (user && bcrypt.compareSync(password, user.password)) {
         res.status(200).json({ message: `${user.username} Logged in` });
       } else {
